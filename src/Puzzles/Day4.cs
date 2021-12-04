@@ -5,28 +5,20 @@ public class Day4
     public int Puzzle1()
     {
         var lines = Routines.ReadInputLines(nameof(Day4)).ToArray();
+        var numbers = ReadNumbers(lines[0]).ToArray();
+        var boards = ReadBoards(lines).ToArray();
 
-        var numbers = ReadNumbers(lines);
-        var boards = ReadBoards(lines);
-
-        for (var i = 0; i < numbers.Length; i++)
+        foreach (var number in numbers)
         {
-            var number = numbers[i];
-
             foreach (var board in boards)
             {
-                for (var row = 0; row < 5; row++)
-                {
-                    for (var col = 0; col < 5; col++)
-                    {
-                        if (board[row, col] != number) continue;
+                var index = Array.IndexOf(board, number);
+                if (index == -1) continue;
 
-                        board[row, col] = -1;
+                board[index] = -1;
 
-                        if (i >= 5 && IsWinningBoard(board, row, col))
-                            return CalculateScore(board, number);
-                    }
-                }
+                if (IsFullColumn(board, index) || IsFullRow(board, index))
+                    return GetScore(board, number);
             }
         }
 
@@ -36,123 +28,91 @@ public class Day4
     public int Puzzle2()
     {
         var lines = Routines.ReadInputLines(nameof(Day4)).ToArray();
-
-        var numbers = ReadNumbers(lines);
-        var boards = ReadBoards(lines);
+        var numbers = ReadNumbers(lines[0]).ToArray();
+        var boards = ReadBoards(lines).ToArray();
 
         var lastScore = 0;
 
         foreach (var number in numbers)
         {
-            for (var i = 0; i < boards.Count; i++)
+            foreach (var board in boards)
             {
-                var board = boards[i];
-                if (board == null) continue;
+                if (board[0] == -2) continue;
 
-                var score = MarkAndGetWinnerScore(board, number);
-                if (score == -1) continue;
+                var index = Array.IndexOf(board, number);
+                if (index == -1) continue;
 
-                lastScore = score;
-                boards[i] = null;
+                board[index] = -1;
+
+                if (!IsFullColumn(board, index) && !IsFullRow(board, index)) continue;
+
+                lastScore = GetScore(board, number);
+                board[0] = -2; // exclude from iteration
             }
         }
 
         return lastScore;
     }
 
-    int MarkAndGetWinnerScore(int[,] board, int number)
+    int GetScore(int[] board, int number)
     {
-        for (var row = 0; row < 5; row++)
-        {
-            for (var col = 0; col < 5; col++)
-            {
-                if (board[row, col] != number) continue;
-
-                board[row, col] = -1;
-
-                if (IsWinningBoard(board, row, col))
-                    return CalculateScore(board, number);
-            }
-        }
-
-        return -1;
-    }
-
-    int CalculateScore(int[,] board, int number)
-    {
-        var sum = 0;
-        for (var i = 0; i < 5; i++)
-        {
-            for (var j = 0; j < 5; j++)
-            {
-                if (board[i, j] != -1)
-                    sum += board[i, j];
-            }
-        }
-
+        var sum = board.Where(x => x != -1).Sum();
         return sum * number;
     }
 
-    bool IsWinningBoard(int[,] board, int row, int col)
-    {
-        return IsWinningRow(board, row) || IsWinningColumn(board, col);
-    }
-
-    bool IsWinningRow(int[,] board, int row)
+    bool IsFullColumn(int[] board, int index)
     {
         for (var i = 0; i < 5; i++)
         {
-            if (board[row, i] != -1)
+            if (board[index] != -1)
                 return false;
-        }
 
-        return true;
-    }
-
-    bool IsWinningColumn(int[,] board, int col)
-    {
-        for (var i = 0; i < 5; i++)
-        {
-            if (board[i, col] != -1)
-                return false;
-        }
-
-        return true;
-    }
-
-    int[] ReadNumbers(string[] lines)
-    {
-        return lines[0].Split(',').Select(int.Parse).ToArray();
-    }
-
-    List<int[,]> ReadBoards(string[] lines)
-    {
-        var result = new List<int[,]>();
-
-        var index = 2;
-        while (index < lines.Length)
-        {
-            var board = ReadBoard(lines.Skip(index).Take(5).ToArray());
-            result.Add(board);
-            index += 6;
-        }
-
-        return result;
-    }
-
-    int[,] ReadBoard(string[] boardLines)
-    {
-        var board = new int[5, 5];
-
-        for (var i = 0; i < 5; i++)
-        {
-            var numbers = boardLines[i].Split(' ').Where(x => x != "").Select(int.Parse).ToArray();
-            for (var j = 0; j < 5; j++)
+            index += 5;
+            if (index >= board.Length)
             {
-                board[i, j] = numbers[j];
+                index %= board.Length;
             }
         }
 
-        return board;
+        return true;
+    }
+
+    bool IsFullRow(int[] board, int index)
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            if (board[index] != -1)
+                return false;
+
+            index++;
+            if (index % 5 == 0)
+            {
+                index = (index / 5 - 1) * 5;
+            }
+        }
+
+        return true;
+    }
+
+    IEnumerable<int> ReadNumbers(string line)
+    {
+        return line.Split(',').Select(int.Parse);
+    }
+
+    IEnumerable<int[]> ReadBoards(string[] lines)
+    {
+        var chunks = lines.Skip(2).Chunk(6);
+
+        foreach (var chunk in chunks)
+        {
+            var numbers = chunk
+                .SelectMany(line =>
+                    line.Split(' ')
+                        .Where(c => c != ""))
+                .Select(int.Parse)
+                .ToArray();
+
+            yield return numbers;
+        }
     }
 }
