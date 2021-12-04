@@ -1,11 +1,13 @@
-﻿namespace AdventOfCode.Puzzles;
+﻿using System.Text;
+
+namespace AdventOfCode.Puzzles;
 
 public class Day3
 {
     public int Puzzle1()
     {
         var lines = Routines.ReadInputLines(nameof(Day3));
-
+        
         var count = 0;
         var result = Array.Empty<int>();
             
@@ -23,32 +25,67 @@ public class Day3
         }
 
         var half = count / 2;
+
+        var gammaBits = new StringBuilder();
+        var epsilonBits = new StringBuilder();
         
-        var gammaBit = result.Select(x => x > half ? '1' : '0').ToArray();
-        var epsilonBit = result.Select(x => x > half ? '0' : '1').ToArray();
+        foreach (var c in result)
+        {
+            if (c > half)
+            {
+                gammaBits.Append('1');
+                epsilonBits.Append('0');
+            }
+            else
+            {
+                gammaBits.Append('0');
+                epsilonBits.Append('1');
+            }
+        }
         
-        var gamma = ToInt(new string(gammaBit));
-        var epsilon = ToInt(new string(epsilonBit));
+        var gamma = Convert.ToInt32(gammaBits.ToString(), 2);
+        var epsilon = Convert.ToInt32(epsilonBits.ToString(), 2);
 
         return gamma * epsilon;
     }
 
     public int Puzzle2()
     {
-        var lines = Routines.ReadInputLines(nameof(Day3)).ToList();
+        var lines = Routines.ReadInputLines(nameof(Day3)).ToArray();
+        var length = lines[0].Length;
 
+        var oxygen = GetValue(lines, length, '1');
+        var co2 = GetValue(lines, length, '0');
+
+        return oxygen * co2;
+    }
+
+    int GetValue(string[] lines, int length, char bit)
+    {
+        var i = 0;
         
-    }
+        while (lines.Length > 1)
+        {
+            var col = lines.Select(l => l[i]).ToArray();
+            var half = col.Length / 2;
+            var count = col.Count(x => x == '1');
 
-    int ToInt(string binary)
-    {
-        return Convert.ToInt32(binary, 2);
-    }
+            var rightBit = bit switch
+            {
+                '1' => count > half ? '1' : '0',
+                '0' => count > half ? '0' : '1',
+                _ => throw new Exception()
+            };
 
-    bool IsMostCommon(string line, char bit)
-    {
-        var half = line.Length / 2;
-        var count = line.Count(c => c == bit);
-        return count > half;
+            if (col.Length % 2 == 0 && count == half)
+                rightBit = bit;
+
+            lines = lines.Where(l => l[i] == rightBit).ToArray();
+
+            i++;
+        }
+
+        return Convert.ToInt32(lines[0], 2);
     }
 }
+
