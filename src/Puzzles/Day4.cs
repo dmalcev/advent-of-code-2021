@@ -23,7 +23,7 @@ public class Day4
 
                         board[row, col] = -1;
 
-                        if (i >= 5 && IsWinner(board, row, col))
+                        if (i >= 5 && IsWinningBoard(board, row, col))
                             return CalculateScore(board, number);
                     }
                 }
@@ -31,6 +31,51 @@ public class Day4
         }
 
         return 0;
+    }
+
+    public int Puzzle2()
+    {
+        var lines = Routines.ReadInputLines(nameof(Day4)).ToArray();
+
+        var numbers = ReadNumbers(lines);
+        var boards = ReadBoards(lines);
+
+        var lastScore = 0;
+
+        foreach (var number in numbers)
+        {
+            for (var i = 0; i < boards.Count; i++)
+            {
+                var board = boards[i];
+                if (board == null) continue;
+
+                var score = MarkAndGetWinnerScore(board, number);
+                if (score == -1) continue;
+
+                lastScore = score;
+                boards[i] = null;
+            }
+        }
+
+        return lastScore;
+    }
+
+    int MarkAndGetWinnerScore(int[,] board, int number)
+    {
+        for (var row = 0; row < 5; row++)
+        {
+            for (var col = 0; col < 5; col++)
+            {
+                if (board[row, col] != number) continue;
+
+                board[row, col] = -1;
+
+                if (IsWinningBoard(board, row, col))
+                    return CalculateScore(board, number);
+            }
+        }
+
+        return -1;
     }
 
     int CalculateScore(int[,] board, int number)
@@ -48,7 +93,7 @@ public class Day4
         return sum * number;
     }
 
-    bool IsWinner(int[,] board, int row, int col)
+    bool IsWinningBoard(int[,] board, int row, int col)
     {
         return IsWinningRow(board, row) || IsWinningColumn(board, col);
     }
