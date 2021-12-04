@@ -9,19 +9,21 @@ public class Day4
         var numbers = ReadNumbers(lines);
         var boards = ReadBoards(lines);
 
-        foreach (var number in numbers)
+        for (var i = 0; i < numbers.Length; i++)
         {
+            var number = numbers[i];
+
             foreach (var board in boards)
             {
-                for (var i = 0; i < 5; i++)
+                for (var row = 0; row < 5; row++)
                 {
-                    for (var j = 0; j < 5; j++)
+                    for (var col = 0; col < 5; col++)
                     {
-                        if (board[i, j] != number) continue;
+                        if (board[row, col] != number) continue;
 
-                        board[i, j] = -1;
+                        board[row, col] = -1;
 
-                        if (IsWinningRow(board, i) || IsWinningColumn(board, j))
+                        if (i >= 5 && IsWinner(board, row, col))
                             return CalculateScore(board, number);
                     }
                 }
@@ -44,6 +46,11 @@ public class Day4
         }
 
         return sum * number;
+    }
+
+    bool IsWinner(int[,] board, int row, int col)
+    {
+        return IsWinningRow(board, row) || IsWinningColumn(board, col);
     }
 
     bool IsWinningRow(int[,] board, int row)
