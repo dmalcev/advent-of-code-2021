@@ -1,3 +1,3 @@
 ﻿using AdventOfCode.Puzzles;
 
-Console.WriteLine(new Day4().Puzzle2());
+Console.WriteLine(new Day5().Puzzle1());
