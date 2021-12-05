@@ -8,6 +8,8 @@ public class Day4
         var numbers = ReadNumbers(lines[0]).ToArray();
         var boards = ReadBoards(lines).ToArray();
 
+        var pos = 0;
+
         foreach (var number in numbers)
         {
             foreach (var board in boards)
@@ -17,9 +19,13 @@ public class Day4
 
                 board[index] = -1;
 
+                if (pos < 5) continue;
+
                 if (IsFullColumn(board, index) || IsFullRow(board, index))
                     return GetScore(board, number);
             }
+
+            pos++;
         }
 
         return 0;
@@ -33,22 +39,28 @@ public class Day4
 
         var lastScore = 0;
 
+        var pos = 0;
+
         foreach (var number in numbers)
         {
             foreach (var board in boards)
             {
-                if (board[0] == -2) continue;
+                if (board[0] == -100) continue;
 
                 var index = Array.IndexOf(board, number);
                 if (index == -1) continue;
 
                 board[index] = -1;
 
+                if (pos < 5) continue;
+
                 if (!IsFullColumn(board, index) && !IsFullRow(board, index)) continue;
 
                 lastScore = GetScore(board, number);
-                board[0] = -2; // exclude from iteration
+                board[0] = -100; // mark as deleted
             }
+
+            pos++;
         }
 
         return lastScore;
@@ -106,9 +118,7 @@ public class Day4
         foreach (var chunk in chunks)
         {
             var numbers = chunk
-                .SelectMany(line =>
-                    line.Split(' ')
-                        .Where(c => c != ""))
+                .SelectMany(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries))
                 .Select(int.Parse)
                 .ToArray();
 
