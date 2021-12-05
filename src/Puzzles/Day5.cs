@@ -22,25 +22,13 @@ public class Day5
         {
             if (skipDiagonal && x1 != x2 && y1 != y2) continue;
 
-            var x = x1;
-            var y = y1;
+            var xDir = Math.Sign(x2 - x1);
+            var yDir = Math.Sign(y2 - y1);
 
-            while (x1 == x2 && y != y2 || y1 == y2 && x != x2 || x != x2 && y != y2)
+            for (int x = x1, y = y1; x != x2 + xDir || y != y2 + yDir; x += xDir, y += yDir)
             {
                 yield return new Point(x, y);
-
-                if (x != x2)
-                {
-                    x += x < x2 ? 1 : -1;
-                }
-
-                if (y != y2)
-                {
-                    y += y < y2 ? 1 : -1;
-                }
             }
-
-            yield return new Point(x, y);
         }
     }
 
@@ -48,9 +36,10 @@ public class Day5
     {
         return
             from line in lines
-            let startPart = line[..line.IndexOf(" ")].Split(',').Select(int.Parse)
+            let parts = line.Split(" -> ")
+            let startPart = parts[0].Split(',').Select(int.Parse)
             let startPoint = new Point(startPart.First(), startPart.Last())
-            let endPart = line[(line.LastIndexOf(" ") + 1)..].Split(',').Select(int.Parse)
+            let endPart = parts[1].Split(',').Select(int.Parse)
             let endPoint = new Point(endPart.First(), endPart.Last())
             select new Range(startPoint, endPoint);
     }
