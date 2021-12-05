@@ -4,30 +4,43 @@ public class Day5
 {
     public int Puzzle1()
     {
-        return GetPoints(GetRanges(ReadLines()))
+        return GetPoints(GetRanges(ReadLines()), skipDiagonal: true)
             .GroupBy(p => p)
             .Count(g => g.Count() >= 2);
     }
 
-    IEnumerable<Point> GetPoints(IEnumerable<Range> ranges)
+    public int Puzzle2()
+    {
+        return GetPoints(GetRanges(ReadLines()), skipDiagonal: false)
+            .GroupBy(p => p)
+            .Count(g => g.Count() >= 2);
+    }
+
+    IEnumerable<Point> GetPoints(IEnumerable<Range> ranges, bool skipDiagonal)
     {
         foreach (var ((x1, y1), (x2, y2)) in ranges)
         {
-            if (y1 == y2)
+            if (skipDiagonal && x1 != x2 && y1 != y2) continue;
+
+            var x = x1;
+            var y = y1;
+
+            while (x1 == x2 && y != y2 || y1 == y2 && x != x2 || x != x2 && y != y2)
             {
-                for (var x = Math.Min(x1, x2); x <= Math.Max(x1, x2); x++)
+                yield return new Point(x, y);
+
+                if (x != x2)
                 {
-                    yield return new Point(x, y1);
+                    x += x < x2 ? 1 : -1;
+                }
+
+                if (y != y2)
+                {
+                    y += y < y2 ? 1 : -1;
                 }
             }
 
-            if (x1 == x2)
-            {
-                for (var y = Math.Min(y1, y2); y <= Math.Max(y1, y2); y++)
-                {
-                    yield return new Point(x1, y);
-                }
-            }
+            yield return new Point(x, y);
         }
     }
 
@@ -39,9 +52,7 @@ public class Day5
             let startPoint = new Point(startPart.First(), startPart.Last())
             let endPart = line[(line.LastIndexOf(" ") + 1)..].Split(',').Select(int.Parse)
             let endPoint = new Point(endPart.First(), endPart.Last())
-            let range = new Range(startPoint, endPoint)
-            where range.Start.X == range.End.X || range.Start.Y == range.End.Y
-            select range;
+            select new Range(startPoint, endPoint);
     }
 
     IEnumerable<string> ReadLines()
