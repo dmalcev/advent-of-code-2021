@@ -2,31 +2,43 @@
 
 public class Day6
 {
-    public int Puzzle1()
+    public long Puzzle1()
     {
-        var states = Routines.ReadInput(nameof(Day6)).Split(',').Select(int.Parse).ToList();
+        var inputs = Routines.ReadInput(nameof(Day6)).Split(',').Select(int.Parse).ToList();
+        var groups = inputs.GroupBy(x => x).Select(g => new Group(g.Key, g.Count())).ToList();
+        var newGroups = new List<Group>();
 
-        var addCount = 0;
-        
-        for (var i = 0; i < 80; i++)
+        for (var i = 0; i < 256; i++)
         {
-            for (var j = 0; j < states.Count; j++)
+            foreach (var g in groups)
             {
-                states[j]--;
-
-                if (states[j] == -1)
+                g.Key--;
+                
+                if (g.Key == -1)
                 {
-                    states[j] = 6;
-                    addCount++;
+                    g.Key = 6;
+                    
+                    newGroups.Add(new Group(8, g.Count));                    
                 }
             }
-
-            for (var k = 0; k < addCount; k++)
-                states.Add(8);
             
-            addCount = 0;
+            groups.AddRange(newGroups);
+            groups = groups.GroupBy(x => x.Key).Select(g => new Group(g.Key, g.Sum(x => x.Count))).ToList();
+            newGroups.Clear();
         }
 
-        return states.Count;
+        return groups.Sum(x => x.Count);
+    }
+
+    class Group
+    {
+        public Group(int key, long count)
+        {
+            Key = key;
+            Count = count;
+        }
+
+        public int Key { get; set; }
+        public long Count { get; set; }
     }
 }
